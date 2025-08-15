@@ -105,6 +105,12 @@ _c_flags += $(if $(patsubst n%,, \
 	-D__KCSAN_INSTRUMENT_BARRIERS__)
 endif
 
+ifeq ($(CONFIG_DEPSAN),y)
+_c_flags += $(if $(patsubst n%,, \
+	$(KCSAN_SANITIZE)y), \
+	$(CFLAGS_DEPSAN)) --foo
+endif
+
 #
 # Enable context analysis flags only where explicitly opted in.
 # (depends on variables CONTEXT_ANALYSIS_obj.o, CONTEXT_ANALYSIS)
