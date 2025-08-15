@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config HAVE_ARCH_DEPSAN
+	bool
+
+config HAVE_DEPSAN_COMPILER
+	def_bool (CC_IS_CLANG && $(cc-option,-fsanitize=lkmm-dep-checker))
+	help
+    Intended to be used with clang from here:
+    https://github.com/TUM-DSE/llvm-lkmm-depsan
+
+menuconfig DEPSAN
+	bool "DEPSAN: LKMM Dependency Sanitizer"
+	depends on HAVE_ARCH_DEPSAN
+	depends on DEBUG_KERNEL
+	help
+    The LKMM Dependency Sanitizer detects when LKMM dependencies have been
+    broken during compilation.

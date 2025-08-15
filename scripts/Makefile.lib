@@ -105,6 +105,12 @@ _c_flags += $(if $(patsubst n%,, \
 	-D__KCSAN_INSTRUMENT_BARRIERS__)
 endif
 
+ifeq ($(CONFIG_DEPSAN),y)
+_c_flags += $(if $(patsubst n%,, \
+	$(KCSAN_SANITIZE)y), \
+	$(CFLAGS_DEPSAN)) --foo
+endif
+
 #
 # Enable AutoFDO build flags except some files or directories we don't want to
 # enable (depends on variables AUTOFDO_PROFILE_obj.o and AUTOFDO_PROFILE).
