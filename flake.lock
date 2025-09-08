@@ -1,5 +1,17 @@
 {
   "nodes": {
+    "clang-unwrapped": {
+      "flake": false,
+      "locked": {
+        "path": "file://.",
+        "type": "path"
+      },
+      "original": {
+        "path": "file://.",
+        "type": "path"
+      },
+      "parent": []
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -36,6 +48,7 @@
     },
     "root": {
       "inputs": {
+        "clang-unwrapped": "clang-unwrapped",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs"
       }
