@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 ifdef CONFIG_DEPSAN
-depsan-cflags := -fsanitize=lkmm-dep-checker -fsanitize-lkmm-dep-checker-outdir=$LKMM_OUTDIR
+depsan-cflags := -fsanitize=lkmm-dep-checker -fsanitize-lkmm-dep-checker-outdir=${LKMM_OUTDIR}
 
 export CFLAGS_DEPSAN := $(depsan-cflags)
 endif # CONFIG_DEPSAN

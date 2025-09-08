@@ -108,7 +108,7 @@ endif
 ifeq ($(CONFIG_DEPSAN),y)
 _c_flags += $(if $(patsubst n%,, \
 	$(KCSAN_SANITIZE)y), \
-	$(CFLAGS_DEPSAN)) --foo
+	$(CFLAGS_DEPSAN))
 endif
 
 #
