@@ -18,6 +18,7 @@ mkConfig() {
   ./scripts/config --enable DEPSAN
   ./scripts/config --disable UBSAN
   ./scripts/config --disable KASAN
+  ./scripts/config --disable KCSAN
   popd
 }
 
@@ -32,6 +33,13 @@ debugBuild() {
   pushd "$BASE_DIR"
   echo "Result here: $LKMM_OUTDIR"
   NIX_DEBUG=1 make HOSTCC=gcc CC=clang -j1
+  popd
+}
+
+kernel_litmus() {
+  pushd "$BASE_DIR"
+  echo "Result here: $LKMM_OUTDIR"
+  make -C . M=scripts/depsan/examples/kernel-litmus/ MO=scripts/depsan/examples/kernel-litmus/ HOSTCC=gcc CC=clang LKMM_OUTDIR=$BASE_DIR/scripts/depsan/examples/kernel-litmus/results
   popd
 }
 
@@ -59,6 +67,8 @@ elif [ "$1" = "run" ]; then
 elif [ "$1" = "debug" ]; then
   setupResult
   debugBuild
+elif [ "$1" = "klitmus" ]; then
+  kernel_litmus
 else
   echo "Unknown command: $1"
   exit 1
