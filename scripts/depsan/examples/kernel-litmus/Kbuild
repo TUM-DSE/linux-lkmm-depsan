@@ -1,0 +1,5 @@
+obj-m := addr-test.o data-test.o ctrl-test.o
+
+addr-test-y := addr.o
+data-test-y := data.o
+ctrl-test-y := ctrl.o
