@@ -14,6 +14,7 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/compiler.h>
+#include <linux/depsan-checks.h>
 #include <linux/kcsan-checks.h>
 #include <asm/rwonce.h>
 
@@ -27,15 +28,15 @@
  */
 
 #ifdef __mb
-#define mb()	do { kcsan_mb(); __mb(); } while (0)
+#define mb()	do { mark_depsan_mb_b(); kcsan_mb(); __mb(); mark_depsan_mb_e(); } while (0)
 #endif
 
 #ifdef __rmb
-#define rmb()	do { kcsan_rmb(); __rmb(); } while (0)
+#define rmb()	do { mark_depsan_rmb_b(); kcsan_rmb(); __rmb(); mark_depsan_rmb_e(); } while (0)
 #endif
 
 #ifdef __wmb
-#define wmb()	do { kcsan_wmb(); __wmb(); } while (0)
+#define wmb()	do { mark_depsan_wmb_b(); kcsan_wmb(); __wmb(); mark_depsan_wmb_e(); } while (0)
 #endif
 
 #ifdef __dma_mb
@@ -96,15 +97,15 @@
 #ifdef CONFIG_SMP
 
 #ifndef smp_mb
-#define smp_mb()	do { kcsan_mb(); __smp_mb(); } while (0)
+#define smp_mb()	do { mark_depsan_mb_b(); kcsan_mb(); __smp_mb(); mark_depsan_mb_e(); } while (0)
 #endif
 
 #ifndef smp_rmb
-#define smp_rmb()	do { kcsan_rmb(); __smp_rmb(); } while (0)
+#define smp_rmb()	do { mark_depsan_rmb_b(); kcsan_rmb(); __smp_rmb(); mark_depsan_rmb_e(); } while (0)
 #endif
 
 #ifndef smp_wmb
-#define smp_wmb()	do { kcsan_wmb(); __smp_wmb(); } while (0)
+#define smp_wmb()	do { mark_depsan_wmb_b(); kcsan_wmb(); __smp_wmb(); mark_depsan_wmb_e(); } while (0)
 #endif
 
 #else	/* !CONFIG_SMP */
@@ -138,19 +139,23 @@
 #ifndef __smp_store_release
 #define __smp_store_release(p, v)					\
 do {									\
+	mark_depsan_release_b();					\
 	compiletime_assert_atomic_type(*p);				\
 	__smp_mb();							\
 	WRITE_ONCE(*p, v);						\
+	mark_depsan_release_e();					\
 } while (0)
 #endif
 
 #ifndef __smp_load_acquire
 #define __smp_load_acquire(p)						\
 ({									\
+	mark_depsan_acquire_b();					\
 	__unqual_scalar_typeof(*p) ___p1 = READ_ONCE(*p);		\
 	compiletime_assert_atomic_type(*p);				\
 	__smp_mb();							\
 	(typeof(*p))___p1;						\
+	mark_depsan_acquire_e();					\
 })
 #endif
 

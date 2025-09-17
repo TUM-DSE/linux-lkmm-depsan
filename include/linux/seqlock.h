@@ -15,6 +15,7 @@
 
 #include <linux/compiler.h>
 #include <linux/cleanup.h>
+#include <linux/depsan-checks.h>
 #include <linux/kcsan-checks.h>
 #include <linux/lockdep.h>
 #include <linux/mutex.h>

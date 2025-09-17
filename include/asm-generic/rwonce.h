@@ -23,6 +23,7 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/compiler_types.h>
+#include <linux/depsan-checks.h>
 #include <linux/kasan-checks.h>
 #include <linux/kcsan-checks.h>
 
@@ -46,7 +47,9 @@
 
 #define READ_ONCE(x)							\
 ({									\
+	mark_depsan_ronce_b();						\
 	compiletime_assert_rwonce_type(x);				\
+	mark_depsan_ronce_e();						\
 	__READ_ONCE(x);							\
 })
 
@@ -57,8 +60,10 @@ do {									\
 
 #define WRITE_ONCE(x, val)						\
 do {									\
+	mark_depsan_wonce_b();						\
 	compiletime_assert_rwonce_type(x);				\
 	__WRITE_ONCE(x, val);						\
+	mark_depsan_wonce_e();						\
 } while (0)
 
 static __no_sanitize_or_inline
