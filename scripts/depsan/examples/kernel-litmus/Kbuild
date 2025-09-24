@@ -1,5 +1,6 @@
-obj-m := addr-test.o data-test.o ctrl-test.o
+obj-m := addr-test.o data-test.o ctrl-test.o prim.o
 
 addr-test-y := addr.o
 data-test-y := data.o
 ctrl-test-y := ctrl.o
+prim-y := primitives.o

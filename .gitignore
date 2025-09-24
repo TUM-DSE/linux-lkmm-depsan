@@ -194,3 +194,9 @@ sphinx_*/
 
 # bc language scripts (not LLVM bitcode)
 !kernel/time/timeconst.bc
+# perf outputs
+perf.data*
+
+# Any other output
+a.out
+*.ll*
