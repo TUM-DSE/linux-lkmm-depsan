@@ -99,6 +99,119 @@ static noinline void overapprox_ronce_woncewonce_wonce(void) {
 	WRITE_ONCE(z, 3);
 }
 
+static noinline void noinline_call_wonce(int i) {
+	WRITE_ONCE(y, i);
+}
+
+static void call_wonce(int i) {
+	WRITE_ONCE(y, i);
+}
+
+static noinline void ronce_noinlinecall(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		noinline_call_wonce(1);
+	}
+}
+
+static noinline void ronce_call(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		call_wonce(1);
+	}
+}
+
+static noinline void bug_ronce_callcall(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		call_wonce(1);
+	} else {
+		call_wonce(1);
+	}
+}
+
+/* x86: conditional add is not a branch */
+static noinline void bug_ronce_callcall1(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		call_wonce(1);
+	} else {
+		call_wonce(2);
+	}
+}
+
+/* No Bug! */
+static noinline void ronce_noinlinecallcall1(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		noinline_call_wonce(1);
+	} else {
+		call_wonce(1);
+	}
+}
+
+static noinline void ronce_noinlinecallcall(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		noinline_call_wonce(1);
+	} else {
+		call_wonce(2);
+	}
+}
+
+static noinline void noinline_call_noinlinecall(int i) {
+	noinline_call_wonce(i);
+}
+
+static noinline void noinline_call_call(int i) {
+	call_wonce(i);
+}
+
+static void call_noinlinecall(int i) {
+	noinline_call_wonce(i);
+}
+
+static void call_call(int i) {
+	call_wonce(i);
+}
+
+static noinline void ronce_noinlinecall_noinlinecall(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		noinline_call_noinlinecall(1);
+	}
+}
+
+static noinline void ronce_call_noinlinecall(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		call_noinlinecall(1);
+	}
+}
+
+static noinline void ronce_noinlinecall_call(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		noinline_call_call(1);
+	}
+}
+
+static noinline void ronce_call_call(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		call_call(1);
+	}
+}
+
+static noinline void ronce_noinlinecallcall_call_noinlinecall(void) {
+	int r1 = READ_ONCE(x);
+	if (r1) {
+		noinline_call_call(1);
+	} else {
+		call_noinlinecall(1);
+	}
+}
+
 int all_ctrl_tests(void)
 {
 	bug_ronce_ronce();
@@ -109,6 +222,18 @@ int all_ctrl_tests(void)
 	ronce_woncewonce_mod();
 	bug_ronce_wonce_shorted();
 	overapprox_ronce_woncewonce_wonce();
+
+	ronce_noinlinecall();
+	ronce_call();
+	bug_ronce_callcall();
+	ronce_callcall();
+	ronce_noinlinecallcall1();
+	ronce_noinlinecallcall();
+	ronce_noinlinecall_noinlinecall();
+	ronce_call_noinlinecall();
+	ronce_noinlinecall_call();
+	ronce_call_call();
+	ronce_noinlinecallcall_call_noinlinecall();
 
 	return 0;
 }

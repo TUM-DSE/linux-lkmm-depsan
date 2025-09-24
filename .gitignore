@@ -183,3 +183,10 @@ sphinx_*/
 
 # Rust analyzer configuration
 /rust-project.json
+
+# perf outputs
+perf.data*
+
+# Any other output
+a.out
+*.ll*
