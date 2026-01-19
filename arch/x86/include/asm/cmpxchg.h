@@ -41,6 +41,7 @@ extern void __add_wrong_size(void)
  */
 #define __xchg_op(ptr, arg, op, lock)					\
 	({								\
+		mark_depsan_atomic_##op##_b();					\
 	        __typeof__ (*(ptr)) __ret = (arg);			\
 		switch (sizeof(*(ptr))) {				\
 		case __X86_CASE_B:					\
@@ -66,6 +67,7 @@ extern void __add_wrong_size(void)
 		default:						\
 			__ ## op ## _wrong_size();			\
 		}							\
+		mark_depsan_atomic_##op##_e();					\
 		__ret;							\
 	})
 
@@ -84,6 +86,7 @@ extern void __add_wrong_size(void)
  */
 #define __raw_cmpxchg(ptr, old, new, size, lock)			\
 ({									\
+	mark_depsan_atomic_cmpxchg_b();					\
 	__typeof__(*(ptr)) __ret;					\
 	__typeof__(*(ptr)) __old = (old);				\
 	__typeof__(*(ptr)) __new = (new);				\
@@ -127,6 +130,7 @@ extern void __add_wrong_size(void)
 	default:							\
 		__cmpxchg_wrong_size();					\
 	}								\
+	mark_depsan_atomic_cmpxchg_e();					\
 	__ret;								\
 })
 

@@ -30,6 +30,7 @@
 #include <linux/cleanup.h>
 #include <asm/processor.h>
 #include <linux/context_tracking_irq.h>
+#include <linux/depsan-checks.h>
 
 token_context_lock(RCU, __reentrant_ctx_lock);
 token_context_lock_instance(RCU, RCU_SCHED);
@@ -507,10 +508,12 @@ context_unsafe(								\
 }) )
 #define __rcu_dereference_check(p, local, c, space) \
 ({ \
+	mark_depsan_rcu_deref_b(); \
 	/* Dependency order vs. p above. */ \
 	typeof(*p) *local = (typeof(*p) *__force)READ_ONCE(p); \
 	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_check() usage"); \
 	rcu_check_sparse(p, space); \
+	mark_depsan_rcu_deref_e(); \
 	((typeof(*p) __force __kernel *)(local)); \
 })
 #define __rcu_dereference_protected(p, local, c, space) \
@@ -521,8 +524,10 @@ context_unsafe(								\
 })
 #define __rcu_dereference_raw(p, local) \
 ({ \
+	mark_depsan_rcu_deref_b(); \
 	/* Dependency order vs. p above. */ \
 	typeof(p) local = READ_ONCE(p); \
+	mark_depsan_rcu_deref_e(); \
 	((typeof(*p) __force __kernel *)(local)); \
 })
 #define rcu_dereference_raw(p) __rcu_dereference_raw(p, __UNIQUE_ID(rcu))
@@ -566,6 +571,8 @@ context_unsafe(								\
  */
 #define rcu_assign_pointer(p, v)					      \
 context_unsafe(							      \
+do {									      \
+	mark_depsan_rcu_assign_b();					      \
 	uintptr_t _r_a_p__v = (uintptr_t)(v);				      \
 	rcu_check_sparse(p, __rcu);					      \
 									      \
@@ -574,6 +581,8 @@ context_unsafe(							      \
 	else								      \
 		smp_store_release(&p, RCU_INITIALIZER((typeof(p))_r_a_p__v)); \
 )
+	mark_depsan_rcu_assign_e();					      \
+} while (0)
 
 /**
  * rcu_replace_pointer() - replace an RCU pointer, returning its old value
@@ -844,6 +853,7 @@ context_unsafe(							      \
 static __always_inline void rcu_read_lock(void)
 	__acquires_shared(RCU)
 {
+
 	__rcu_read_lock();
 	__acquire_shared(RCU);
 	rcu_lock_acquire(&rcu_lock_map);

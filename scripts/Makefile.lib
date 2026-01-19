@@ -107,7 +107,7 @@ endif
 
 ifeq ($(CONFIG_DEPSAN),y)
 _c_flags += $(if $(patsubst n%,, \
-	$(KCSAN_SANITIZE)y), \
+	$(KASAN_SANITIZE_$(target-stem).o)$(KASAN_SANITIZE)$(is-kernel-object)), \
 	$(CFLAGS_DEPSAN))
 endif
 

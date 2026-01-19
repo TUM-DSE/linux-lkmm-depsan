@@ -50,16 +50,21 @@
 #ifndef smp_store_release
 # define smp_store_release(p, v)		\
 do {						\
+	mark_depsan_s_release_b();		\
 	smp_mb();				\
 	WRITE_ONCE(*p, v);			\
+	mark_depsan_s_release_e();		\
 } while (0)
 #endif
 
+//TODO: rvalue marking
 #ifndef smp_load_acquire
 # define smp_load_acquire(p)			\
 ({						\
+	mark_depsan_l_acquire_b();		\
 	typeof(*p) ___p1 = READ_ONCE(*p);	\
 	smp_mb();				\
+	mark_depsan_l_acquire_e();		\
 	___p1;					\
 })
 #endif

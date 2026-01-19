@@ -139,38 +139,38 @@
 #ifndef __smp_store_release
 #define __smp_store_release(p, v)					\
 do {									\
-	mark_depsan_release_b();					\
+	mark_depsan_s_release_b();					\
 	compiletime_assert_atomic_type(*p);				\
 	__smp_mb();							\
 	WRITE_ONCE(*p, v);						\
-	mark_depsan_release_e();					\
+	mark_depsan_s_release_e();					\
 } while (0)
 #endif
 
 #ifndef __smp_load_acquire
 #define __smp_load_acquire(p)						\
 ({									\
-	mark_depsan_acquire_b();					\
+	mark_depsan_l_acquire_b();					\
 	__unqual_scalar_typeof(*p) ___p1 = READ_ONCE(*p);		\
 	compiletime_assert_atomic_type(*p);				\
 	__smp_mb();							\
+	mark_depsan_l_acquire_e();					\
 	(typeof(*p))___p1;						\
-	mark_depsan_acquire_e();					\
 })
 #endif
 
 #ifdef CONFIG_SMP
 
 #ifndef smp_store_mb
-#define smp_store_mb(var, value)  do { kcsan_mb(); __smp_store_mb(var, value); } while (0)
+#define smp_store_mb(var, value)  do { mark_depsan_mb_b(); kcsan_mb(); __smp_store_mb(var, value); } while (0)
 #endif
 
 #ifndef smp_mb__before_atomic
-#define smp_mb__before_atomic()	do { kcsan_mb(); __smp_mb__before_atomic(); } while (0)
+#define smp_mb__before_atomic()	do { mark_depsan_mb_ba_b(); kcsan_mb(); __smp_mb__before_atomic(); mark_depsan_mb_ba_e(); } while (0)
 #endif
 
 #ifndef smp_mb__after_atomic
-#define smp_mb__after_atomic()	do { kcsan_mb(); __smp_mb__after_atomic(); } while (0)
+#define smp_mb__after_atomic()	do { mark_depsan_mb_aa_b() ;kcsan_mb(); __smp_mb__after_atomic(); mark_depsan_mb_aa_e(); } while (0)
 #endif
 
 #ifndef smp_store_release
@@ -198,16 +198,20 @@ do {									\
 #ifndef smp_store_release
 #define smp_store_release(p, v)						\
 do {									\
+	mark_depsan_s_release_b();					\
 	barrier();							\
 	WRITE_ONCE(*p, v);						\
+	mark_depsan_s_release_e();					\
 } while (0)
 #endif
 
 #ifndef smp_load_acquire
 #define smp_load_acquire(p)						\
 ({									\
+	mark_depsan_l_acquire_b();					\
 	__unqual_scalar_typeof(*p) ___p1 = READ_ONCE(*p);		\
 	barrier();							\
+	mark_depsan_l_acquire_e();					\
 	(typeof(*p))___p1;						\
 })
 #endif
