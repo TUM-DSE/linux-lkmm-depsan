@@ -3340,6 +3340,7 @@ trace_complete_out:
  */
 void synchronize_rcu(void)
 {
+	mark_depsan_rcu_sync_b();
 	unsigned long flags;
 	struct rcu_node *rnp;
 
@@ -3374,6 +3375,7 @@ void synchronize_rcu(void)
 	for (rnp = this_cpu_ptr(&rcu_data)->mynode; rnp; rnp = rnp->parent)
 		rnp->gp_seq_needed = rnp->gp_seq = rcu_state.gp_seq;
 	local_irq_restore(flags);
+	mark_depsan_rcu_sync_e();
 }
 EXPORT_SYMBOL_GPL(synchronize_rcu);
 

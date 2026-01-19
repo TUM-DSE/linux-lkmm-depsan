@@ -8,8 +8,11 @@
       url = "file://.";
       flake = false;
     };
+    dartagnan = {
+      url = "github:ReimersS/Dat3M?ref=nixify";
+    };
   };
-  outputs = { self, nixpkgs, flake-utils, clang-unwrapped, ...}:
+  outputs = { self, nixpkgs, flake-utils, clang-unwrapped, dartagnan, ...}:
   flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
@@ -50,7 +53,20 @@
         shellHook = ''
           export HOSTCC="${pkgs.gcc}/bin/gcc"
         '';
-        nativeBuildInputs = pkgs.linux.nativeBuildInputs ++ [ pkgs.gdb pkgs.gcc ];
+        nativeBuildInputs = [
+          pkgs.gdb
+          pkgs.gcc
+          pkgs.pkg-config
+          (pkgs.python3.withPackages (python-pkgs: [
+				    python-pkgs.pandas
+				    python-pkgs.seaborn
+				    python-pkgs.matplotlib
+				    python-pkgs.notebook
+            python-pkgs.pylatex
+            python-pkgs.zlib-ng
+				  ]))
+          dartagnan.packages.${system}.default
+        ] ++ pkgs.linux.nativeBuildInputs;
         src = self;
         hardeningDisable = ["all"];
       };

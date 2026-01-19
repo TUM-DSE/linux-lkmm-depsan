@@ -19,13 +19,34 @@ mkConfig() {
   ./scripts/config --disable UBSAN
   ./scripts/config --disable KASAN
   ./scripts/config --disable KCSAN
+  ./scripts/config --disable KCOV
+  ./scripts/config --disable KSTACK_ERASE
+  popd
+}
+
+mkDebugConfig() {
+  pushd "$BASE_DIR"
+  make randconfig HOSTCC=gcc CC=$PWD/clang-wrapper ARCH=x86_64
+  ./scripts/config --enable CONFIG_DEBUG_INFO
+  ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
+  ./scripts/config --disable CONFIG_DEBUG_INFO_REDUCED
+  ./scripts/config --enable DEBUG_INFO_COMPRESSED_NONE
+  ./scripts/config --disable DEBUG_INFO_COMPRESSED_ZLIB
+  ./scripts/config --disable CONFIG_DEBUG_INFO_SPLIT
+  ./scripts/config --enable DEBUG_KERNEL
+  ./scripts/config --enable DEPSAN
+  ./scripts/config --disable UBSAN
+  ./scripts/config --disable KASAN
+  ./scripts/config --disable KCSAN
+  ./scripts/config --disable KCOV
+  ./scripts/config --disable KSTACK_ERASE
   popd
 }
 
 doBuild() {
   pushd "$BASE_DIR"
   echo "Result here: $LKMM_OUTDIR"
-  make HOSTCC=gcc CC=clang -j$(nproc)
+  make HOSTCC=gcc CC=$PWD/clang-wrapper -j$(nproc)
   popd
 }
 
@@ -61,6 +82,8 @@ fi
 
 if [ "$1" = "config" ]; then
   mkConfig
+elif [ "$1" = "donfig" ]; then
+  mkDebugConfig
 elif [ "$1" = "run" ]; then
   setupResult
   doBuild

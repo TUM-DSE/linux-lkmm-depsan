@@ -16,6 +16,7 @@ extern void bar(void);
 static int x = 0;
 static int y = 0;
 static int z = 0;
+static atomic_t a1 = ATOMIC_INIT(0);
 
 static int shared[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -212,6 +213,23 @@ static noinline void ronce_noinlinecallcall_call_noinlinecall(void) {
 	}
 }
 
+static noinline void atomic_wonce(void) {
+	int r1 = atomic_read(&a1);
+	if (r1) {
+		WRITE_ONCE(y, 1);
+	}
+}
+
+static noinline void ronce_mb_woncewonce(void) {
+	int r1 = READ_ONCE(x);
+	smp_mb();
+	if (r1) {
+		WRITE_ONCE(y, 1);
+	} else {
+		WRITE_ONCE(y, 1);
+	}
+}
+
 int all_ctrl_tests(void)
 {
 	bug_ronce_ronce();
@@ -226,7 +244,7 @@ int all_ctrl_tests(void)
 	ronce_noinlinecall();
 	ronce_call();
 	bug_ronce_callcall();
-	ronce_callcall();
+	bug_ronce_callcall1();
 	ronce_noinlinecallcall1();
 	ronce_noinlinecallcall();
 	ronce_noinlinecall_noinlinecall();
@@ -234,6 +252,10 @@ int all_ctrl_tests(void)
 	ronce_noinlinecall_call();
 	ronce_call_call();
 	ronce_noinlinecallcall_call_noinlinecall();
+
+	atomic_wonce();
+
+	ronce_mb_woncewonce();
 
 	return 0;
 }

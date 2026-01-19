@@ -3,6 +3,7 @@
 #define _ASM_X86_BARRIER_H
 
 #include <asm/alternative.h>
+#include <linux/depsan-checks.h>
 #include <asm/nops.h>
 
 /*
@@ -19,9 +20,9 @@
 #define wmb() asm volatile(ALTERNATIVE("lock addl $0,-4(%%esp)", "sfence", \
 				       X86_FEATURE_XMM2) ::: "memory", "cc")
 #else
-#define __mb()	asm volatile("mfence":::"memory")
-#define __rmb()	asm volatile("lfence":::"memory")
-#define __wmb()	asm volatile("sfence" ::: "memory")
+#define __mb()	({ mark_depsan_mb_b(); asm volatile("mfence":::"memory"); mark_depsan_mb_e();})
+#define __rmb()	({ mark_depsan_rmb_b(); asm volatile("lfence":::"memory"); mark_depsan_rmb_e();})
+#define __wmb()	({ mark_depsan_wmb_b(); asm volatile("sfence" ::: "memory"); mark_depsan_wmb_e(); })
 #endif
 
 /**
@@ -58,16 +59,20 @@
 
 #define __smp_store_release(p, v)					\
 do {									\
+	mark_depsan_s_release_b();					\
 	compiletime_assert_atomic_type(*p);				\
 	barrier();							\
 	WRITE_ONCE(*p, v);						\
+	mark_depsan_s_release_e();					\
 } while (0)
 
 #define __smp_load_acquire(p)						\
 ({									\
+	mark_depsan_l_acquire_b();					\
 	typeof(*p) ___p1 = READ_ONCE(*p);				\
 	compiletime_assert_atomic_type(*p);				\
 	barrier();							\
+	mark_depsan_l_acquire_e();					\
 	___p1;								\
 })
 
