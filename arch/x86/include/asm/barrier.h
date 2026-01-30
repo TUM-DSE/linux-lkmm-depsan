@@ -67,14 +67,13 @@ do {									\
 } while (0)
 
 #define __smp_load_acquire(p)						\
-({									\
+__builtin_annotation(({									\
 	mark_depsan_l_acquire_b();					\
 	typeof(*p) ___p1 = READ_ONCE(*p);				\
 	compiletime_assert_atomic_type(*p);				\
 	barrier();							\
-	mark_depsan_l_acquire_e();					\
 	___p1;								\
-})
+}), "__depsan_l_acquire_e")
 
 /* Atomic operations are already serializing on x86 */
 #define __smp_mb__before_atomic()	do { } while (0)

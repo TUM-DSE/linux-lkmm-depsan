@@ -507,15 +507,14 @@ context_unsafe(								\
 	((typeof(*p) __force __kernel *)(local)); \
 }) )
 #define __rcu_dereference_check(p, local, c, space) \
-({ \
+__builtin_annotation(({ \
 	mark_depsan_rcu_deref_b(); \
 	/* Dependency order vs. p above. */ \
 	typeof(*p) *local = (typeof(*p) *__force)READ_ONCE(p); \
 	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_check() usage"); \
 	rcu_check_sparse(p, space); \
-	mark_depsan_rcu_deref_e(); \
 	((typeof(*p) __force __kernel *)(local)); \
-})
+}), "__depsan_rcu_deref_e")
 #define __rcu_dereference_protected(p, local, c, space) \
 ({ \
 	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_protected() usage"); \
@@ -523,13 +522,12 @@ context_unsafe(								\
 	((typeof(*p) __force __kernel *)(p)); \
 })
 #define __rcu_dereference_raw(p, local) \
-({ \
+__builtin_annotation(({ \
 	mark_depsan_rcu_deref_b(); \
 	/* Dependency order vs. p above. */ \
 	typeof(p) local = READ_ONCE(p); \
-	mark_depsan_rcu_deref_e(); \
 	((typeof(*p) __force __kernel *)(local)); \
-})
+}), "__depsan_rcu_deref_e")
 #define rcu_dereference_raw(p) __rcu_dereference_raw(p, __UNIQUE_ID(rcu))
 
 /**

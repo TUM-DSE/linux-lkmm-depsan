@@ -60,9 +60,9 @@
 #define pmr_sync()	do {} while (0)
 #endif
 
-#define __mb()		dsb(sy)
-#define __rmb()		dsb(ld)
-#define __wmb()		dsb(st)
+#define __mb()		({ mark_depsan_mb_b(); dsb(sy); mark_depsan_mb_e(); })
+#define __rmb()		({ mark_depsan_rmb_b(); dsb(ld); mark_depsan_rmb_e(); })
+#define __wmb()		({ mark_depsan_wmb_b(); dsb(st); mark_depsan_wmb_e(); })
 
 #define __dma_mb()	dmb(osh)
 #define __dma_rmb()	dmb(oshld)
@@ -129,6 +129,7 @@ static inline unsigned long array_index_mask_nospec(unsigned long idx,
 
 #define __smp_store_release(p, v)					\
 do {									\
+	mark_depsan_s_release_b();					\
 	typeof(p) __p = (p);						\
 	union { __unqual_scalar_typeof(*p) __val; char __c[1]; } __u =	\
 		{ .__val = (__force __unqual_scalar_typeof(*p)) (v) };	\
@@ -160,10 +161,12 @@ do {									\
 				: "memory");				\
 		break;							\
 	}								\
+	mark_depsan_s_release_e();					\
 } while (0)
 
 #define __smp_load_acquire(p)						\
-({									\
+__builtin_annotation(({							\
+	mark_depsan_l_acquire_b();					\
 	union { __unqual_scalar_typeof(*p) __val; char __c[1]; } __u;	\
 	typeof(p) __p = (p);						\
 	compiletime_assert_atomic_type(*p);				\
@@ -191,7 +194,7 @@ do {									\
 		break;							\
 	}								\
 	(typeof(*p))__u.__val;						\
-})
+}), "__depsan_l_acquire")
 
 #define smp_cond_load_relaxed(ptr, cond_expr)				\
 ({									\

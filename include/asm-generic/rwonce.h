@@ -46,12 +46,11 @@
 #endif
 
 #define READ_ONCE(x)							\
-({									\
+__builtin_annotation(({							\
 	mark_depsan_ronce_b();						\
 	compiletime_assert_rwonce_type(x);				\
-	mark_depsan_ronce_e();						\
 	__READ_ONCE(x);							\
-})
+}), "__depsan_ronce_e")
 
 #define __WRITE_ONCE(x, val)						\
 do {									\

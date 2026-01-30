@@ -76,6 +76,7 @@ static inline void __depsan_atomic_long_or_b(void) { }
 /* Value-returning atomics */
 
 static inline void __depsan_atomic_fetch_add_b(void) { }
+static inline void __depsan_atomic_xadd_b(void) { }
 static inline void __depsan_atomic_fetch_add_relaxed_b(void) { }
 static inline void __depsan_atomic_fetch_add_acquire_b(void) { }
 static inline void __depsan_atomic_fetch_add_release_b(void) { }
@@ -242,6 +243,7 @@ static inline void __depsan_atomic_long_or_e(void) { }
 /* Value-returning atomics */
 
 static inline void __depsan_atomic_fetch_add_e(void) { }
+static inline void __depsan_atomic_xadd_e(void) { }
 static inline void __depsan_atomic_fetch_add_relaxed_e(void) { }
 static inline void __depsan_atomic_fetch_add_acquire_e(void) { }
 static inline void __depsan_atomic_fetch_add_release_e(void) { }
@@ -442,7 +444,7 @@ static inline void __depsan_atomic_long_add_negative_e(void) { }
 /* Value-returning atomics */
 
 #define mark_depsan_atomic_fetch_add_b()	__depsan_atomic_fetch_add_b()
-#define mark_depsan_atomic_xadd_b()		__depsan_atomic_fetch_add_b()
+#define mark_depsan_atomic_xadd_b()		__depsan_atomic_xadd_b()
 #define mark_depsan_atomic_fetch_add_relaxed_b()	__depsan_atomic_fetch_add_relaxed_b()
 #define mark_depsan_atomic_fetch_add_acquire_b()	__depsan_atomic_fetch_add_acquire_b()
 #define mark_depsan_atomic_fetch_add_release_b()	__depsan_atomic_fetch_add_release_b()
@@ -609,7 +611,7 @@ static inline void __depsan_atomic_long_add_negative_e(void) { }
 /* Value-returning atomics */
 
 #define mark_depsan_atomic_fetch_add_e()	__depsan_atomic_fetch_add_e()
-#define mark_depsan_atomic_xadd_e()		__depsan_atomic_fetch_add_e()
+#define mark_depsan_atomic_xadd_e()		__depsan_atomic_xadd_e()
 #define mark_depsan_atomic_fetch_add_relaxed_e()	__depsan_atomic_fetch_add_relaxed_e()
 #define mark_depsan_atomic_fetch_add_acquire_e()	__depsan_atomic_fetch_add_acquire_e()
 #define mark_depsan_atomic_fetch_add_release_e()	__depsan_atomic_fetch_add_release_e()

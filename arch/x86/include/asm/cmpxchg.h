@@ -35,13 +35,13 @@ extern void __add_wrong_size(void)
 #define	__X86_CASE_Q	-1		/* sizeof will never return -1 */
 #endif
 
-/* 
+/*
  * An exchange-type operation, which takes a value and a pointer, and
  * returns the old value.
  */
 #define __xchg_op(ptr, arg, op, lock)					\
-	({								\
-		mark_depsan_atomic_##op##_b();					\
+	__builtin_annotation(({						\
+		mark_depsan_atomic_##op##_b();				\
 	        __typeof__ (*(ptr)) __ret = (arg);			\
 		switch (sizeof(*(ptr))) {				\
 		case __X86_CASE_B:					\
@@ -67,9 +67,8 @@ extern void __add_wrong_size(void)
 		default:						\
 			__ ## op ## _wrong_size();			\
 		}							\
-		mark_depsan_atomic_##op##_e();					\
 		__ret;							\
-	})
+	}), "__depsan_atomic_"#op"_e")
 
 /*
  * Note: no "lock" prefix even on SMP: xchg always implies lock anyway.
@@ -85,7 +84,7 @@ extern void __add_wrong_size(void)
  * indicated by comparing RETURN with OLD.
  */
 #define __raw_cmpxchg(ptr, old, new, size, lock)			\
-({									\
+__builtin_annotation(({									\
 	mark_depsan_atomic_cmpxchg_b();					\
 	__typeof__(*(ptr)) __ret;					\
 	__typeof__(*(ptr)) __old = (old);				\
@@ -130,9 +129,8 @@ extern void __add_wrong_size(void)
 	default:							\
 		__cmpxchg_wrong_size();					\
 	}								\
-	mark_depsan_atomic_cmpxchg_e();					\
 	__ret;								\
-})
+}), "_depsan_atomic_cmpxchg_e")
 
 #define __cmpxchg(ptr, old, new, size)					\
 	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)

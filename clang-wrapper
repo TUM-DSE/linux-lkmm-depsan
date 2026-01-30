@@ -1,0 +1,14 @@
+#! /run/current-system/sw/bin/bash
+
+LOGFILE=$(mktemp /tmp/clang-stderr.XXXXXX)
+
+clang "$@" 2> >(tee "$LOGFILE" >&2)
+EXITCODE=$?
+
+if [ $EXITCODE -eq 0 ]; then
+    rm "$LOGFILE"
+else
+    echo "Clang exited with code $EXITCODE. See $LOGFILE for details." >&2
+fi
+
+exit $EXITCODE

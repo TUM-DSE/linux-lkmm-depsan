@@ -149,14 +149,13 @@ do {									\
 
 #ifndef __smp_load_acquire
 #define __smp_load_acquire(p)						\
-({									\
+__builtin_annotation(({							\
 	mark_depsan_l_acquire_b();					\
 	__unqual_scalar_typeof(*p) ___p1 = READ_ONCE(*p);		\
 	compiletime_assert_atomic_type(*p);				\
 	__smp_mb();							\
-	mark_depsan_l_acquire_e();					\
 	(typeof(*p))___p1;						\
-})
+}), "__depsan_l_acquire_e")
 #endif
 
 #ifdef CONFIG_SMP
@@ -207,13 +206,12 @@ do {									\
 
 #ifndef smp_load_acquire
 #define smp_load_acquire(p)						\
-({									\
+__builtin_annotation(({							\
 	mark_depsan_l_acquire_b();					\
 	__unqual_scalar_typeof(*p) ___p1 = READ_ONCE(*p);		\
 	barrier();							\
-	mark_depsan_l_acquire_e();					\
 	(typeof(*p))___p1;						\
-})
+}), "__depsan_l_acquire_e")
 #endif
 
 #endif	/* CONFIG_SMP */

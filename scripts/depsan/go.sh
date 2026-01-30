@@ -53,7 +53,7 @@ doBuild() {
 debugBuild() {
   pushd "$BASE_DIR"
   echo "Result here: $LKMM_OUTDIR"
-  NIX_DEBUG=1 make HOSTCC=gcc CC=clang -j1
+  make HOSTCC=gcc CC=$PWD/clang-wrapper -j1
   popd
 }
 
@@ -65,11 +65,12 @@ kernel_litmus() {
 }
 
 setupResult() {
+  arch=$(uname -m)
   datetime=$(date +%Y-%m-%d_%H-%M)
-  res_dir="$SCRIPT_DIR/results/$datetime"
+  res_dir="$SCRIPT_DIR/results/$arch/$datetime"
 
   mkdir -p "$res_dir"
-  ln -s -f -n "./$datetime" "$SCRIPT_DIR/results/latest"
+  ln -s -f -n "./$datetime" "$SCRIPT_DIR/results/$arch/latest"
 
   cp $BASE_DIR/.config "$res_dir/config"
   export LKMM_OUTDIR="$res_dir"
