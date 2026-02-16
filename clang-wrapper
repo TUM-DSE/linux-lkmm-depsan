@@ -2,7 +2,8 @@
 
 LOGFILE=$(mktemp /tmp/clang-stderr.XXXXXX)
 
-clang "$@" 2> >(tee "$LOGFILE" >&2)
+echo "$@" > "$LOGFILE"
+clang "$@" 2> >(tee -a "$LOGFILE" >&2)
 EXITCODE=$?
 
 if [ $EXITCODE -eq 0 ]; then

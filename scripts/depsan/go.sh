@@ -5,9 +5,20 @@ set -e
 SCRIPT_DIR=$(dirname "$0")
 BASE_DIR=$(realpath "$SCRIPT_DIR/../..")
 
+ARCH=$(uname -m)
+
+if [ $ARCH = "aarch64" ]; then
+  KARCH="arm64"
+elif [ $ARCH = "x86_64" ]; then
+  KARCH=$ARCH
+else
+  echo "Probably unsupported ARCH; Good luck."
+  KARCH=$ARCH
+fi
+
 mkConfig() {
   pushd "$BASE_DIR"
-  make randconfig HOSTCC=gcc CC=clang ARCH=x86_64
+  make randconfig HOSTCC=gcc CC=clang ARCH=$KARCH
   ./scripts/config --enable CONFIG_DEBUG_INFO
   ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
   ./scripts/config --disable CONFIG_DEBUG_INFO_REDUCED
@@ -21,12 +32,16 @@ mkConfig() {
   ./scripts/config --disable KCSAN
   ./scripts/config --disable KCOV
   ./scripts/config --disable KSTACK_ERASE
+  ./scripts/config --enable MODULES
+
+  make olddefconfig HOSTCC=gcc CC=clang
+  make modules_prepare HOSTCC=gcc CC=clang
   popd
 }
 
 mkDebugConfig() {
   pushd "$BASE_DIR"
-  make randconfig HOSTCC=gcc CC=$PWD/clang-wrapper ARCH=x86_64
+  make randconfig HOSTCC=gcc CC=$PWD/clang-wrapper ARCH=$KARCH
   ./scripts/config --enable CONFIG_DEBUG_INFO
   ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
   ./scripts/config --disable CONFIG_DEBUG_INFO_REDUCED
@@ -65,7 +80,7 @@ kernel_litmus() {
 }
 
 setupResult() {
-  arch=$(uname -m)
+  arch=$KARCH
   datetime=$(date +%Y-%m-%d_%H-%M)
   res_dir="$SCRIPT_DIR/results/$arch/$datetime"
 
