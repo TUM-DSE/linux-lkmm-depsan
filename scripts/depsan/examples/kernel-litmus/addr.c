@@ -26,10 +26,24 @@ static noinline void ronce_ronce(void)
 	r3 = READ_ONCE(*r2);
 }
 
+static noinline void ronce_sr(void)
+{
+	int r1;
+	int *r2;
+	int r3;
+
+	r1 = READ_ONCE(x);
+
+	r2 = &shared[r1];
+
+	smp_store_release(r2,42);
+}
+
 int all_addr_tests(void)
 {
 
 	ronce_ronce();
+	ronce_sr();
 	return 0;
 }
 

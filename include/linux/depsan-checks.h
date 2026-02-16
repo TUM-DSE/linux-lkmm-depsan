@@ -9,6 +9,10 @@
 #include <linux/compiler_attributes.h>
 #include <linux/types.h>
 
+#ifndef __clang__
+#define __builtin_annotation(e, m) e
+#endif
+
 static inline void __depsan_mb_b(void)			{ }
 static inline void __depsan_mb_e(void)			{ }
 static inline void __depsan_mb_ba_b(void)		{ }
