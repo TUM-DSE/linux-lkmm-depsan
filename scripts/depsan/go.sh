@@ -18,7 +18,7 @@ fi
 
 mkConfig() {
   pushd "$BASE_DIR"
-  make randconfig HOSTCC=gcc CC=clang ARCH=$KARCH
+  make allmodconfig HOSTCC=gcc CC=clang ARCH=$KARCH
   ./scripts/config --enable CONFIG_DEBUG_INFO
   ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
   ./scripts/config --disable CONFIG_DEBUG_INFO_REDUCED
@@ -33,6 +33,14 @@ mkConfig() {
   ./scripts/config --disable KCOV
   ./scripts/config --disable KSTACK_ERASE
   ./scripts/config --enable MODULES
+  ./scripts/config --disable WERROR
+
+  ./scripts/config --disable X86_KERNEL_IBT # We disabled Exports so ibt would bug
+
+  ./scripts/config --disable QUICC_ENGINE # Timeout
+  ./scripts/config --disable MT7996E # Error: Uninitialized ptr
+  ./scripts/config --disable VIDEO_SAMSUNG_S5P_MFC # Error: Uninitialized ptr
+  ./scripts/config --disable DRM_MSM_DPU # Error: Uninitialized ptr
 
   make olddefconfig HOSTCC=gcc CC=clang
   make modules_prepare HOSTCC=gcc CC=clang

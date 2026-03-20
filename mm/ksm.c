@@ -2273,7 +2273,7 @@ static void stable_tree_append(struct ksm_rmap_item *rmap_item,
  * @page: the page that we are searching identical page to.
  * @rmap_item: the reverse mapping into the virtual address of this page
  */
-static void cmp_and_merge_page(struct page *page, struct ksm_rmap_item *rmap_item)
+static noinline void cmp_and_merge_page(struct page *page, struct ksm_rmap_item *rmap_item)
 {
 	struct folio *folio = page_folio(page);
 	struct ksm_rmap_item *tree_rmap_item;

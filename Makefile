@@ -1010,8 +1010,10 @@ KBUILD_CFLAGS	+= -fexperimental-late-parse-attributes
 endif
 endif
 
+ifdef CONFIG_CC_IS_GCC
 # Explicitly clear padding bits during variable initialization
 KBUILD_CFLAGS += $(call cc-option,-fzero-init-padding-bits=all)
+endif
 
 # While VLAs have been removed, GCC produces unreachable stack probes
 # for the randomize_kstack_offset feature. Disable it for all compilers.
