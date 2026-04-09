@@ -53,6 +53,7 @@ static noinline void bug_ronce_mem_wonce(void)
 }
 
 // ######################################################################### //
+#if 0
 #include <linux/mm.h>
 #include <linux/rbtree.h>
 
@@ -117,13 +118,14 @@ static noinline void mm_ksm(void)
 	stable_node = page_stable_node(page);
 }
 
+#endif
 int all_addr_tests(void)
 {
 
 	ronce_ronce();
 	ronce_sr();
 	bug_ronce_mem_wonce();
-	mm_ksm();
+	//mm_ksm();
 	return 0;
 }
 

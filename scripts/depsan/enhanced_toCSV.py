@@ -12,6 +12,8 @@ import re
 from pathlib import Path
 
 arch = platform.machine()
+if arch == "aarch64":
+    arch = "arm64"
 
 segment_types = {
     "Intact": "< 0, 0>",
@@ -26,7 +28,7 @@ segment_types = {
     "Combined": "Combined"
 }
 
-base_dir = f"results/{arch}/latest"
+base_dir = f"/share/sebastian/results/{arch}/latest"
 
 def parse_matched_chains(matched_chains_file):
     if not os.path.exists(matched_chains_file):
