@@ -38,9 +38,82 @@ mkConfig() {
   ./scripts/config --disable X86_KERNEL_IBT # We disabled Exports so ibt would bug
 
   ./scripts/config --disable QUICC_ENGINE # Timeout
+  ./scripts/config --disable FRAMEBUFFER_CONSOLE # Timeout
+  ./scripts/config --disable FRAMEBUFFER_CONSOLE_ROTATION # Timeout
   ./scripts/config --disable MT7996E # Error: Uninitialized ptr
   ./scripts/config --disable VIDEO_SAMSUNG_S5P_MFC # Error: Uninitialized ptr
   ./scripts/config --disable DRM_MSM_DPU # Error: Uninitialized ptr
+
+  ./scripts/config --disable LOCKDEP # BlockAddr
+  ./scripts/config --disable LOCKDEP # BlockAddr
+  ./scripts/config --disable PROVE_LOCKING
+  ./scripts/config --disable TRACE_LOCKING
+  ./scripts/config --disable DEBUG_LOCK_ALLOC
+  ./scripts/config --disable LOCK_STAT
+  ./scripts/config --disable TRACEPOINTS
+  ./scripts/config --disable FTRACE
+  ./scripts/config --disable TRACING
+  ./scripts/config --disable HIST_TRIGGERS # Tracing
+  ./scripts/config --disable PREEMPTIRQ_TRACEPOINTS # Tracing
+  ./scripts/config --disable GENERIC_TRACER # Tracing
+  ./scripts/config --disable ENABLE_DEFAULT_TRACERS # Tracing
+  ./scripts/config --disable FPROBE_EVENTS # Tracing
+  ./scripts/config --disable KPROBE_EVENTS # Tracing
+  ./scripts/config --disable UPROBE_EVENTS # Tracing
+  ./scripts/config --disable SYNTH_EVENTS # Tracing
+  ./scripts/config --disable USER_EVENTS # Tracing
+  ./scripts/config --disable FUNCTION_TRACER # Tracing
+  ./scripts/config --disable IRQSOFF_TRACER # Tracing
+  ./scripts/config --disable PREEMPT_TRACER # Tracing
+  ./scripts/config --disable SCHED_TRACER # Tracing
+  ./scripts/config --disable HWLAT_TRACER # Tracing
+  ./scripts/config --disable OSNOISE_TRACER # Tracing
+  ./scripts/config --disable TIMERLAT_TRACER # Tracing
+  ./scripts/config --disable MMIOTRACE # Tracing
+  ./scripts/config --disable PREEMPT_TRACER # Tracing
+  ./scripts/config --disable FTRACE_SYSCALLS # Tr
+  ./scripts/config --disable TRACE_BRANCH_PROFILING # Tracing
+  ./scripts/config --disable BLK_DEV_IO_TRACE # Tracing
+  ./scripts/config --disable FTRACE_STARTUP_TEST # Tracing
+  ./scripts/config --disable DRM_I915_TRACE_GEM # Tracing
+  ./scripts/config --disable DRM_I915_TRACE_GTT # Tracing
+  ./scripts/config --disable RV # Tracing
+  ./scripts/config -d TRACING \
+     -d BLK_DEV_IO_TRACE \
+     -d DEBUG_NET_SMALL_RTNL \
+     -d DRM_I915_TRACE_GEM \
+     -d DRM_I915_TRACE_GTT \
+     -d ENABLE_DEFAULT_TRACERS \
+     -d FPROBE_EVENTS \
+     -d FTRACE_SYSCALLS \
+     -d FUNCTION_TRACER \
+     -d GENERIC_TRACER \
+     -d HIST_TRIGGERS \
+     -d HWLAT_TRACER \
+     -d IRQSOFF_TRACER \
+     -d KPROBE_EVENTS \
+     -d MMIOTRACE \
+     -d OSNOISE_TRACER \
+     -d PREEMPTIRQ_TRACEPOINTS \
+     -d PREEMPT_TRACER \
+     -d PROFILE_ALL_BRANCHES \
+     -d PROFILE_ANNOTATED_BRANCHES \
+     -d PROVE_LOCKING \
+     -d RV \
+     -d RV_MON_SLEEP \
+     -d SCHED_TRACER \
+     -d STACK_TRACER \
+     -d SYNTH_EVENTS \
+     -d TIMERLAT_TRACER \
+     -d TRACE_BRANCH_PROFILING \
+     -d UPROBE_EVENTS \
+     -d USER_EVENTS
+
+  ./scripts/config --disable PROFILE_ALL_BRANCHES
+  ./scripts/config --disable PROFILE_ANNOTATED_BRANCHES
+  ./scripts/config --disable STACK_TRACER
+
+
 
   make olddefconfig HOSTCC=gcc CC=clang
   make modules_prepare HOSTCC=gcc CC=clang
@@ -71,6 +144,10 @@ doBuild() {
   echo "Result here: $LKMM_OUTDIR"
   make HOSTCC=gcc CC=$PWD/clang-wrapper -j$(nproc)
   popd
+  pushd "$LKMM_OUTDIR"
+  find -iname matched_chains.txt -size 0 | xargs dirname > EMPTY
+  find -iname matched_chains.txt -size +0 | xargs dirname > NON-EMPTY
+  popd
 }
 
 debugBuild() {
@@ -90,10 +167,10 @@ kernel_litmus() {
 setupResult() {
   arch=$KARCH
   datetime=$(date +%Y-%m-%d_%H-%M)
-  res_dir="$SCRIPT_DIR/results/$arch/$datetime"
+  res_dir="/share/sebastian/results/$arch/$datetime"
 
   mkdir -p "$res_dir"
-  ln -s -f -n "./$datetime" "$SCRIPT_DIR/results/$arch/latest"
+  ln -s -f -n "./$datetime" "/share/sebastian/results/$arch/latest"
 
   cp $BASE_DIR/.config "$res_dir/config"
   export LKMM_OUTDIR="$res_dir"
