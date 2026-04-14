@@ -25,7 +25,7 @@ mkConfig() {
   ./scripts/config --enable DEBUG_INFO_COMPRESSED_NONE
   ./scripts/config --disable DEBUG_INFO_COMPRESSED_ZLIB
   ./scripts/config --disable CONFIG_DEBUG_INFO_SPLIT
-  ./scripts/config --enable DEBUG_KERNEL
+  ./scripts/config --disable DEBUG_KERNEL
   ./scripts/config --enable DEPSAN
   ./scripts/config --disable UBSAN
   ./scripts/config --disable KASAN
@@ -34,6 +34,12 @@ mkConfig() {
   ./scripts/config --disable KSTACK_ERASE
   ./scripts/config --enable MODULES
   ./scripts/config --disable WERROR
+
+  ./scripts/config --disable SCSI_UFSHCD # BUG_ON arm64
+  ./scripts/config --disable ICE # BUG_ON arm64
+  ./scripts/config --disable PACKING_KUNIT_TEST # BUG_ON arm64
+  ./scripts/config --disable BPF_SYSCALL # BUG_ON arm64 #FIXME
+  ./scripts/config --disable AF_KCM # BUG_ON arm64 #select BPF_SYSCALL
 
   ./scripts/config --disable X86_KERNEL_IBT # We disabled Exports so ibt would bug
 
@@ -50,65 +56,45 @@ mkConfig() {
   ./scripts/config --disable TRACE_LOCKING
   ./scripts/config --disable DEBUG_LOCK_ALLOC
   ./scripts/config --disable LOCK_STAT
-  ./scripts/config --disable TRACEPOINTS
-  ./scripts/config --disable FTRACE
-  ./scripts/config --disable TRACING
-  ./scripts/config --disable HIST_TRIGGERS # Tracing
-  ./scripts/config --disable PREEMPTIRQ_TRACEPOINTS # Tracing
-  ./scripts/config --disable GENERIC_TRACER # Tracing
-  ./scripts/config --disable ENABLE_DEFAULT_TRACERS # Tracing
-  ./scripts/config --disable FPROBE_EVENTS # Tracing
-  ./scripts/config --disable KPROBE_EVENTS # Tracing
-  ./scripts/config --disable UPROBE_EVENTS # Tracing
-  ./scripts/config --disable SYNTH_EVENTS # Tracing
-  ./scripts/config --disable USER_EVENTS # Tracing
-  ./scripts/config --disable FUNCTION_TRACER # Tracing
-  ./scripts/config --disable IRQSOFF_TRACER # Tracing
-  ./scripts/config --disable PREEMPT_TRACER # Tracing
-  ./scripts/config --disable SCHED_TRACER # Tracing
-  ./scripts/config --disable HWLAT_TRACER # Tracing
-  ./scripts/config --disable OSNOISE_TRACER # Tracing
-  ./scripts/config --disable TIMERLAT_TRACER # Tracing
-  ./scripts/config --disable MMIOTRACE # Tracing
-  ./scripts/config --disable PREEMPT_TRACER # Tracing
-  ./scripts/config --disable FTRACE_SYSCALLS # Tr
-  ./scripts/config --disable TRACE_BRANCH_PROFILING # Tracing
-  ./scripts/config --disable BLK_DEV_IO_TRACE # Tracing
-  ./scripts/config --disable FTRACE_STARTUP_TEST # Tracing
-  ./scripts/config --disable DRM_I915_TRACE_GEM # Tracing
-  ./scripts/config --disable DRM_I915_TRACE_GTT # Tracing
-  ./scripts/config --disable RV # Tracing
-  ./scripts/config -d TRACING \
-     -d BLK_DEV_IO_TRACE \
-     -d DEBUG_NET_SMALL_RTNL \
-     -d DRM_I915_TRACE_GEM \
-     -d DRM_I915_TRACE_GTT \
-     -d ENABLE_DEFAULT_TRACERS \
-     -d FPROBE_EVENTS \
-     -d FTRACE_SYSCALLS \
-     -d FUNCTION_TRACER \
-     -d GENERIC_TRACER \
-     -d HIST_TRIGGERS \
-     -d HWLAT_TRACER \
-     -d IRQSOFF_TRACER \
-     -d KPROBE_EVENTS \
-     -d MMIOTRACE \
-     -d OSNOISE_TRACER \
-     -d PREEMPTIRQ_TRACEPOINTS \
-     -d PREEMPT_TRACER \
-     -d PROFILE_ALL_BRANCHES \
-     -d PROFILE_ANNOTATED_BRANCHES \
-     -d PROVE_LOCKING \
-     -d RV \
-     -d RV_MON_SLEEP \
-     -d SCHED_TRACER \
-     -d STACK_TRACER \
-     -d SYNTH_EVENTS \
-     -d TIMERLAT_TRACER \
-     -d TRACE_BRANCH_PROFILING \
-     -d UPROBE_EVENTS \
-     -d USER_EVENTS
-
+  #./scripts/config --disable TRACEPOINTS
+  #./scripts/config --disable FTRACE
+  #./scripts/config --disable TRACING
+  #./scripts/config --disable HIST_TRIGGERS # Tracing
+  #./scripts/config --disable PREEMPTIRQ_TRACEPOINTS # Tracing
+  #./scripts/config --disable GENERIC_TRACER # Tracing
+  #./scripts/config --disable ENABLE_DEFAULT_TRACERS # Tracing
+  #./scripts/config --disable FPROBE_EVENTS # Tracing
+#  ./scripts/config -d TRACING \
+#     -d BLK_DEV_IO_TRACE \
+#     -d DEBUG_NET_SMALL_RTNL \
+#     -d DRM_I915_TRACE_GEM \
+#     -d DRM_I915_TRACE_GTT \
+#     -d ENABLE_DEFAULT_TRACERS \
+#     -d FPROBE_EVENTS \
+#     -d FTRACE_SYSCALLS \
+#     -d FUNCTION_TRACER \
+#     -d GENERIC_TRACER \
+#     -d HIST_TRIGGERS \
+#     -d HWLAT_TRACER \
+#     -d IRQSOFF_TRACER \
+#     -d KPROBE_EVENTS \
+#     -d MMIOTRACE \
+#     -d OSNOISE_TRACER \
+#     -d PREEMPTIRQ_TRACEPOINTS \
+#     -d PREEMPT_TRACER \
+#     -d PROFILE_ALL_BRANCHES \
+#     -d PROFILE_ANNOTATED_BRANCHES \
+#     -d PROVE_LOCKING \
+#     -d RV \
+#     -d RV_MON_SLEEP \
+#     -d SCHED_TRACER \
+#     -d STACK_TRACER \
+#     -d SYNTH_EVENTS \
+#     -d TIMERLAT_TRACER \
+#     -d TRACE_BRANCH_PROFILING \
+#     -d UPROBE_EVENTS \
+#     -d USER_EVENTS
+#
   ./scripts/config --disable PROFILE_ALL_BRANCHES
   ./scripts/config --disable PROFILE_ANNOTATED_BRANCHES
   ./scripts/config --disable STACK_TRACER

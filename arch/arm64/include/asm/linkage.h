@@ -43,4 +43,6 @@
 	SYM_TYPED_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)	\
 	bti c ;
 
+#define _THIS_IP_ ({ unsigned long __here; asm ("adr %0, 1f\n1:" : "=r" (__here)); __here; })
+
 #endif
