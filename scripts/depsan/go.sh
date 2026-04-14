@@ -46,6 +46,7 @@ mkConfig() {
   ./scripts/config --disable QUICC_ENGINE # Timeout
   ./scripts/config --disable FRAMEBUFFER_CONSOLE # Timeout
   ./scripts/config --disable FRAMEBUFFER_CONSOLE_ROTATION # Timeout
+  ./scripts/config --disable DRM_I915 # Timeout
   ./scripts/config --disable MT7996E # Error: Uninitialized ptr
   ./scripts/config --disable VIDEO_SAMSUNG_S5P_MFC # Error: Uninitialized ptr
   ./scripts/config --disable DRM_MSM_DPU # Error: Uninitialized ptr
