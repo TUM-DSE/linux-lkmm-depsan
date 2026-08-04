@@ -38,8 +38,8 @@ mkConfig() {
   ./scripts/config --disable SCSI_UFSHCD # BUG_ON arm64
   ./scripts/config --disable ICE # BUG_ON arm64
   ./scripts/config --disable PACKING_KUNIT_TEST # BUG_ON arm64
-  ./scripts/config --disable BPF_SYSCALL # BUG_ON arm64 #FIXME
-  ./scripts/config --disable AF_KCM # BUG_ON arm64 #select BPF_SYSCALL
+  ./scripts/config --disable BPF_ARCH_SPINLOCK # BUG_ON arm64
+  ./scripts/config --disable QUEUED_SPINLOCKS # BUG_ON arm64
 
   ./scripts/config --disable X86_KERNEL_IBT # We disabled Exports so ibt would bug
 
@@ -50,7 +50,6 @@ mkConfig() {
   ./scripts/config --disable VIDEO_SAMSUNG_S5P_MFC # Error: Uninitialized ptr
   ./scripts/config --disable DRM_MSM_DPU # Error: Uninitialized ptr
 
-  ./scripts/config --disable LOCKDEP # BlockAddr
   ./scripts/config --disable LOCKDEP # BlockAddr
   ./scripts/config --disable PROVE_LOCKING
   ./scripts/config --disable TRACE_LOCKING
