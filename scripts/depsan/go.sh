@@ -128,12 +128,13 @@ mkDebugConfig() {
 doBuild() {
   pushd "$BASE_DIR"
   echo "Result here: $LKMM_OUTDIR"
-  make HOSTCC=gcc CC=$PWD/clang-wrapper -j$(nproc)
+  make HOSTCC=gcc CC=$PWD/clang-wrapper -k -j$(nproc) || true
   popd
   pushd "$LKMM_OUTDIR"
   find -iname matched_chains.txt -size 0 | xargs dirname > EMPTY
   find -iname matched_chains.txt -size +0 | xargs dirname > NON-EMPTY
   popd
+  python3 "$SCRIPT_DIR/toCSV.py"
 }
 
 debugBuild() {
@@ -151,19 +152,56 @@ kernel_litmus() {
 }
 
 setupResult() {
+  if [ -n "$LKMM_OUTDIR" ]; then
+    mkdir -p "$LKMM_OUTDIR"
+    cp "$BASE_DIR/.config" "$LKMM_OUTDIR/config"
+    return
+  fi
+
   arch=$KARCH
   datetime=$(date +%Y-%m-%d_%H-%M)
-  res_dir="/share/sebastian/results/$arch/$datetime"
+  user=$(whoami)
+  share_dir="/share/$user"
 
+  if [ -d "$share_dir" ]; then
+    base_res="$share_dir/results"
+  else
+    base_res="$BASE_DIR/results"
+  fi
+
+  res_dir="$base_res/$arch/$datetime"
   mkdir -p "$res_dir"
-  ln -s -f -n "./$datetime" "/share/sebastian/results/$arch/latest"
+  ln -s -f -n "./$datetime" "$base_res/$arch/latest"
 
-  cp $BASE_DIR/.config "$res_dir/config"
+  cp "$BASE_DIR/.config" "$res_dir/config"
   export LKMM_OUTDIR="$res_dir"
 }
 
+doModelCheck() {
+  if [ -z "$LKMM_OUTDIR" ]; then
+    echo "Error: LKMM_OUTDIR not set. Run 'config' and 'run' first."
+    exit 1
+  fi
+
+  CAT_FILE="${1:?Usage: $0 modelcheck <cat-file>}"
+
+  MC_LOGS="$LKMM_OUTDIR/../dartagnan-logs"
+  mkdir -p "$MC_LOGS"
+
+  echo "Running dartagnan model checker..."
+  python3 "$SCRIPT_DIR/run_dartagnan.py" "$LKMM_OUTDIR" "$CAT_FILE" "$LKMM_OUTDIR/EMPTY" "$MC_LOGS"
+
+  echo "Generating model checker CSV..."
+  if [ "$KARCH" = "arm64" ]; then
+    MC_CSV_NAME="arm"
+  else
+    MC_CSV_NAME="$KARCH"
+  fi
+  python3 "$SCRIPT_DIR/logs2csv.py" "$MC_LOGS" "$LKMM_OUTDIR/../$MC_CSV_NAME.csv"
+}
+
 if [ -z "$1" ]; then
-  echo "Usage: $0 <config|run>"
+  echo "Usage: $0 <config|run|modelcheck|klitmus>"
   exit 1
 fi
 
@@ -177,6 +215,8 @@ elif [ "$1" = "run" ]; then
 elif [ "$1" = "debug" ]; then
   setupResult
   debugBuild
+elif [ "$1" = "modelcheck" ]; then
+  doModelCheck "$2"
 elif [ "$1" = "klitmus" ]; then
   kernel_litmus
 else
