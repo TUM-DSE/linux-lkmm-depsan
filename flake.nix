@@ -154,7 +154,7 @@
           ''}" ];
           Env = [
             "HOSTCC=${pkgs.gcc}/bin/gcc"
-            "C_INCLUDE_PATH=${pkgs.openssl.dev}/include"
+            "C_INCLUDE_PATH=${pkgs.openssl.dev}/include:${pkgs.elfutils.dev}/include"
             "LIBRARY_PATH=${pkgs.openssl.out}/lib"
             "LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib"
           ];
