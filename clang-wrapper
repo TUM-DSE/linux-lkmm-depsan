@@ -1,4 +1,4 @@
-#! /run/current-system/sw/bin/bash
+#!/usr/bin/env bash
 
 LOGFILE=$(mktemp /tmp/clang-stderr.XXXXXX)
 
