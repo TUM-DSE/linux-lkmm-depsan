@@ -43,7 +43,7 @@
         '';
       };
       kernel-src = pkgs.stdenv.mkDerivation {
-        name = "linux-lkmm-depsan-src";
+        name = "linux-lkmm-depcheck-src";
         src = self;
         phases = [ "unpackPhase" "installPhase" ];
         installPhase = ''
@@ -60,7 +60,7 @@
       };
 
       packages.container = pkgs.dockerTools.buildLayeredImage {
-        name = "lkmm-depsan";
+        name = "lkmm-depchecker-${if system == "aarch64-linux" || system == "aarch64-darwin" then "aarch64" else "x86-64"}";
         tag = "latest";
         contents = [
           pkgs.bashInteractive
