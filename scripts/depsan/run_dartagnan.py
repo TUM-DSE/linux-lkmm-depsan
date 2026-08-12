@@ -1,8 +1,9 @@
+import os
 import sys
 import subprocess
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from datetime import datetime
 
 
 def load_skip_list(path):
@@ -18,6 +19,12 @@ def load_skip_list(path):
             skip.add(name)
 
     return skip
+
+
+def run_dartagnan(cmd, output_path):
+    with output_path.open("w") as f:
+        subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, check=False)
+
 
 def main():
     if len(sys.argv) != 5:
@@ -54,7 +61,9 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Output directory: {output_dir}")
 
-    for outer in root.iterdir():
+    # Collect all jobs, printing skip messages immediately
+    jobs = []
+    for outer in sorted(root.iterdir()):
         if not outer.is_dir():
             continue
 
@@ -62,20 +71,17 @@ def main():
             print(f"Skipping {outer.name}")
             continue
 
-        for inner in outer.iterdir():
+        for inner in sorted(outer.iterdir()):
             if not inner.is_dir():
                 continue
 
             folder_name = inner.name
-
             file_path = inner / required_file
             output_path = output_dir / f"{folder_name}.out"
 
             if not file_path.is_file():
                 print(f"Skipping {outer.name}/{folder_name}. {required_file} not found")
                 continue
-
-            print(f"Running {outer.name}/{folder_name}")
 
             cmd = [
                 "timeout", "60",
@@ -95,13 +101,28 @@ def main():
                 "--program.processing.skipAssertionsOfType=UNKNOWN_FUNCTION",
             ]
 
-            with output_path.open("w") as f:
-                subprocess.run(
-                    cmd,
-                    stdout=f,
-                    stderr=subprocess.STDOUT,
-                    check=False
-                )
+            jobs.append((f"{outer.name}/{folder_name}", cmd, output_path))
+
+    print(f"Running {len(jobs)} dartagnan jobs with {os.cpu_count()} workers")
+
+    # Run in parallel, print logs in submission order
+    completed = {}
+    next_idx = 0
+
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as pool:
+        future_to_idx = {}
+        for idx, (display_name, cmd, output_path) in enumerate(jobs):
+            future = pool.submit(run_dartagnan, cmd, output_path)
+            future_to_idx[future] = idx
+
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            completed[idx] = True
+
+            # Flush all consecutive completed jobs from next_idx
+            while next_idx in completed:
+                print(f"Running {jobs[next_idx][0]}")
+                next_idx += 1
 
 
 if __name__ == "__main__":

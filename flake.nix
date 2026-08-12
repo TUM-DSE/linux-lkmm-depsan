@@ -134,6 +134,8 @@
             echo "--- Generating model checker CSV ---"
             if [ "$KARCH" = "arm64" ]; then
               MC_CSV_NAME="arm"
+            elif [ "$KARCH" = "x86_64" ]; then
+              MC_CSV_NAME="x86"
             else
               MC_CSV_NAME="$KARCH"
             fi
@@ -155,7 +157,7 @@
           Env = [
             "HOSTCC=${pkgs.gcc}/bin/gcc"
             "C_INCLUDE_PATH=${pkgs.openssl.dev}/include:${pkgs.elfutils.dev}/include"
-            "LIBRARY_PATH=${pkgs.openssl.out}/lib"
+            "LIBRARY_PATH=${pkgs.openssl.out}/lib:${pkgs.elfutils.out}/lib"
             "LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib"
           ];
           Volumes = {
