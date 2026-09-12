@@ -37,16 +37,75 @@ extern bool CONFIG_X86_64 __kconfig __weak;
 		__scalar_type_to_expr_cases(long long), \
 		default: (typeof(x))0))
 
+#ifdef CONFIG_DEPSAN
+static inline void __depsan_bpf_ronce_b(void)		{ }
+static inline void __depsan_bpf_ronce_e(void)		{ }
+static inline void __depsan_bpf_wonce_b(void)		{ }
+static inline void __depsan_bpf_wonce_e(void)		{ }
+static inline void __depsan_bpf_atomic_b(void)		{ }
+static inline void __depsan_bpf_atomic_e(void)		{ }
+static inline void __depsan_bpf_mb_b(void)		{ }
+static inline void __depsan_bpf_mb_e(void)		{ }
+static inline void __depsan_bpf_rmb_b(void)		{ }
+static inline void __depsan_bpf_rmb_e(void)		{ }
+static inline void __depsan_bpf_wmb_b(void)		{ }
+static inline void __depsan_bpf_wmb_e(void)		{ }
+static inline void __depsan_bpf_l_acquire_b(void)	{ }
+static inline void __depsan_bpf_l_acquire_e(void)	{ }
+static inline void __depsan_bpf_s_release_b(void)	{ }
+static inline void __depsan_bpf_s_release_e(void)	{ }
+#define mark_depsan_bpf_ronce_b()	__depsan_bpf_ronce_b()
+#define mark_depsan_bpf_wonce_b()	__depsan_bpf_wonce_b()
+#define mark_depsan_bpf_wonce_e()	__depsan_bpf_wonce_e()
+#define mark_depsan_bpf_atomic_b()	__depsan_bpf_atomic_b()
+#define mark_depsan_bpf_mb_b()		__depsan_bpf_mb_b()
+#define mark_depsan_bpf_mb_e()		__depsan_bpf_mb_e()
+#define mark_depsan_bpf_rmb_b()		__depsan_bpf_rmb_b()
+#define mark_depsan_bpf_rmb_e()		__depsan_bpf_rmb_e()
+#define mark_depsan_bpf_wmb_b()		__depsan_bpf_wmb_b()
+#define mark_depsan_bpf_wmb_e()		__depsan_bpf_wmb_e()
+#define mark_depsan_bpf_l_acquire_b()	__depsan_bpf_l_acquire_b()
+#define mark_depsan_bpf_s_release_b()	__depsan_bpf_s_release_b()
+#define mark_depsan_bpf_s_release_e()	__depsan_bpf_s_release_e()
+#else
+#define mark_depsan_bpf_ronce_b()
+#define mark_depsan_bpf_wonce_b()
+#define mark_depsan_bpf_wonce_e()
+#define mark_depsan_bpf_atomic_b()
+#define mark_depsan_bpf_mb_b()
+#define mark_depsan_bpf_mb_e()
+#define mark_depsan_bpf_rmb_b()
+#define mark_depsan_bpf_rmb_e()
+#define mark_depsan_bpf_wmb_b()
+#define mark_depsan_bpf_wmb_e()
+#define mark_depsan_bpf_l_acquire_b()
+#define mark_depsan_bpf_s_release_b()
+#define mark_depsan_bpf_s_release_e()
+#endif
+
 /* No-op for BPF */
 #define cpu_relax() ({})
 
-#define READ_ONCE(x) (*(volatile typeof(x) *)&(x))
+#define READ_ONCE(x)							\
+__builtin_annotation(({							\
+	mark_depsan_bpf_ronce_b();					\
+	(*(volatile typeof(x) *)&(x));					\
+}), "__depsan_bpf_ronce_e")
 
 #ifndef WRITE_ONCE
-#define WRITE_ONCE(x, val) ((*(volatile typeof(x) *)&(x)) = (val))
+#define WRITE_ONCE(x, val)						\
+do {									\
+	mark_depsan_bpf_wonce_b();					\
+	(*(volatile typeof(x) *)&(x)) = (val);				\
+	mark_depsan_bpf_wonce_e();					\
+} while (0)
 #endif
 
-#define cmpxchg(p, old, new) __sync_val_compare_and_swap((p), old, new)
+#define cmpxchg(p, old, new)						\
+__builtin_annotation(({							\
+	mark_depsan_bpf_atomic_b();					\
+	__sync_val_compare_and_swap((p), old, new);			\
+}), "__depsan_bpf_atomic_e")
 
 #define try_cmpxchg(p, pold, new)                                 \
 	({                                                        \
@@ -63,24 +122,30 @@ extern bool CONFIG_X86_64 __kconfig __weak;
 
 #define smp_mb()                                 \
 	({                                       \
+		mark_depsan_bpf_mb_b();          \
 		volatile unsigned long __val;    \
 		__sync_fetch_and_add(&__val, 0); \
+		mark_depsan_bpf_mb_e();          \
 	})
 
 #define smp_rmb()                   \
 	({                          \
+		mark_depsan_bpf_rmb_b(); \
 		if (!CONFIG_X86_64) \
 			smp_mb();   \
 		else                \
 			barrier();  \
+		mark_depsan_bpf_rmb_e(); \
 	})
 
 #define smp_wmb()                   \
 	({                          \
+		mark_depsan_bpf_wmb_b(); \
 		if (!CONFIG_X86_64) \
 			smp_mb();   \
 		else                \
 			barrier();  \
+		mark_depsan_bpf_wmb_e(); \
 	})
 
 /* Control dependency provides LOAD->STORE, provide LOAD->LOAD */
@@ -95,31 +160,37 @@ extern bool CONFIG_X86_64 __kconfig __weak;
  * keep using the fallback when targeting older kernels.
  */
 #define smp_load_acquire(p)								\
-	({										\
-		__unqual_typeof(*(p)) ___p1 = __atomic_load_n((p), __ATOMIC_ACQUIRE);	\
-		(typeof(*(p)))___p1;							\
-	})
+__builtin_annotation(({									\
+	mark_depsan_bpf_l_acquire_b();							\
+	__unqual_typeof(*(p)) ___p1 = __atomic_load_n((p), __ATOMIC_ACQUIRE);		\
+	(typeof(*(p)))___p1;								\
+}), "__depsan_bpf_l_acquire_e")
 
 #define smp_store_release(p, val)							\
 	({										\
+		mark_depsan_bpf_s_release_b();						\
 		__atomic_store_n((p), (val), __ATOMIC_RELEASE);				\
+		mark_depsan_bpf_s_release_e();						\
 	})
 #else
 #define smp_load_acquire(p)                                  \
-	({                                                   \
-		__unqual_typeof(*(p)) __v = READ_ONCE(*(p)); \
-		if (!CONFIG_X86_64)                          \
-			smp_mb();                            \
-		barrier();                                   \
-		__v;                                         \
-	})
+__builtin_annotation(({                                      \
+	mark_depsan_bpf_l_acquire_b();                       \
+	__unqual_typeof(*(p)) __v = READ_ONCE(*(p));         \
+	if (!CONFIG_X86_64)                                  \
+		smp_mb();                                    \
+	barrier();                                           \
+	__v;                                                 \
+}), "__depsan_bpf_l_acquire_e")
 
 #define smp_store_release(p, val)      \
 	({                             \
+		mark_depsan_bpf_s_release_b(); \
 		if (!CONFIG_X86_64)    \
 			smp_mb();      \
 		barrier();             \
 		WRITE_ONCE(*(p), val); \
+		mark_depsan_bpf_s_release_e(); \
 	})
 #endif
 
