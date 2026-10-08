@@ -13,7 +13,7 @@ loads_pattern = re.compile(r"#Loads:\s*(\d+)")
 stores_pattern = re.compile(r"#Stores:\s*(\d+)")
 loops_pattern = re.compile(r"Detected\s+(\d+)\s+loops")
 
-PREFIXES = ["/arm64/latest", "/x86_64/latest", "/arm64/", "/x86_64/"]
+PREFIXES = ["/arm64/latest", "/x86_64/latest", "/arm64/PAPER/", "/x86_64/PAPER/", "/arm64/previous/", "/x86_64/previous/", "/arm64/", "/x86_64/"]
 
 def extract_relative_path(full_path):
     rel = full_path

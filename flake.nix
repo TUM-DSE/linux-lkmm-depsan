@@ -51,6 +51,52 @@
           cp -r . $out/kernel-src/
         '';
       };
+
+      # Headers needed to compile BPF selftest programs out-of-tree.
+      # Provides: bpf_helper_defs.h, UAPI asm headers, tools includes.
+      # vmlinux.h must be generated at runtime from /sys/kernel/btf/vmlinux.
+      bpf-selftest-headers = pkgs.stdenv.mkDerivation {
+        name = "bpf-selftest-headers";
+        src = self;
+        nativeBuildInputs = [ pkgs.python3 ];
+        phases = [ "unpackPhase" "buildPhase" "installPhase" ];
+        buildPhase = ''
+          # Generate bpf_helper_defs.h
+          python3 scripts/bpf_doc.py --header \
+            --file tools/include/uapi/linux/bpf.h \
+            > bpf_helper_defs.h
+        '';
+        installPhase = ''
+          mkdir -p $out/include/asm $out/tools
+
+          # bpf_helper_defs.h (generated, needed by bpf_helpers.h)
+          cp bpf_helper_defs.h $out/include/
+
+          # UAPI asm-generic headers
+          ln -s ${self}/include/uapi/asm-generic $out/include/asm-generic
+
+          # x86 UAPI asm headers (primary), fill gaps from asm-generic
+          for f in arch/x86/include/uapi/asm/*.h; do
+            [ -f "$f" ] && ln -s ${self}/"$f" $out/include/asm/$(basename "$f")
+          done
+          for f in include/uapi/asm-generic/*.h; do
+            name=$(basename "$f")
+            [ ! -e $out/include/asm/"$name" ] && ln -s ${self}/"$f" $out/include/asm/"$name" || true
+          done
+
+          # tools/include (types.h, linux/bpf.h, etc.)
+          ln -s ${self}/tools/include $out/tools/include
+
+          # tools/lib (bpf_helpers.h, bpf_tracing.h — included as <bpf/...>)
+          ln -s ${self}/tools/lib $out/tools/lib
+
+          # BPF selftest dir (progs/, libarena/, bpf_misc.h, etc.)
+          ln -s ${self}/tools/testing/selftests/bpf $out/tools/bpf-selftests
+
+          # kernel include/uapi for relative includes from progs/
+          ln -s ${self}/include/uapi $out/include/uapi
+        '';
+      };
     in
     {
 
@@ -58,6 +104,8 @@
         stdenv = pkgs.llvmPackages.stdenv;
         src = self;
       };
+
+      packages.bpf-selftest-headers = bpf-selftest-headers;
 
       packages.container = pkgs.dockerTools.buildLayeredImage {
         name = "lkmm-depchecker-${if system == "aarch64-linux" || system == "aarch64-darwin" then "aarch64" else "x86-64"}";

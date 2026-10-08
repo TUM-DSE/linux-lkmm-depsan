@@ -56,6 +56,10 @@ def main():
         print("Error: dartagnan not found in PATH")
         sys.exit(1)
 
+    if "DAT3M_HOME" not in os.environ:
+        os.environ["DAT3M_HOME"] = str(Path.home() / "Dat3M")
+    os.environ.setdefault("JAVA_TOOL_OPTIONS", "-DlogLevel=info")
+
     required_file = "Mod2.ll"
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -83,16 +87,17 @@ def main():
                 print(f"Skipping {outer.name}/{folder_name}. {required_file} not found")
                 continue
 
+            cat_include = str(cat_file.parent)
             cmd = [
                 "timeout", "60",
                 dartagnan,
-                "-DlogLevel=info",
                 str(cat_file),
                 "--target=lkmm",
                 "--solver=z3",
                 "--method=eager",
                 "--property=cat_spec",
                 "--printer.afterProcessing=true",
+                f"--cat.include={cat_include}",
                 str(file_path),
                 f"--entry={folder_name}",
                 "--witness=png",
