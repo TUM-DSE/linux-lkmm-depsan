@@ -97,13 +97,34 @@
           ln -s ${self}/include/uapi $out/include/uapi
         '';
       };
+      mkKernel = kcov: (pkgs.linux.override {
+        stdenv = pkgs.llvmPackages.stdenv;
+        argsOverride = {
+          src = self;
+          version = "7.3-rc2";
+          modDirVersion = "7.3.0-rc2";
+        };
+        structuredExtraConfig = with pkgs.lib.kernel; {
+          KCOV = if kcov then yes else no;
+          DEBUG_INFO = yes;
+          DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT = yes;
+          DEBUG_INFO_REDUCED = no;
+        } // pkgs.lib.optionalAttrs kcov {
+          KCOV_INSTRUMENT_ALL = yes;
+          KCOV_ENABLE_COMPARISONS = no;
+        };
+      }).overrideAttrs (old: {
+        dontStrip = true;
+        postInstall = (old.postInstall or "") + ''
+          mkdir -p $dev/coverage-build
+          cp "$buildRoot"/{vmlinux,System.map,.config} $dev/coverage-build/
+        '';
+      });
     in
     {
-
-      defaultPackage = pkgs.linux.override {
-        stdenv = pkgs.llvmPackages.stdenv;
-        src = self;
-      };
+      defaultPackage = self.packages.${system}.normal;
+      packages.normal = mkKernel false;
+      packages.kcov = mkKernel true;
 
       packages.bpf-selftest-headers = bpf-selftest-headers;
 
